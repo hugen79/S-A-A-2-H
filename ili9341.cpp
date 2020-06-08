@@ -18,12 +18,12 @@
  * Boston, MA 02110-1301, USA.
  */
 #include "ili9341.hpp"
-#include "Font5x7.h"
+#include "Font7x11b.h"
 #include "numfont20x22.h"
 
 // Display width and height definition
-#define ILI9341_WIDTH     320
-#define ILI9341_HEIGHT    240
+#define ILI9341_WIDTH     480
+#define ILI9341_HEIGHT    320
 
 // Display commands list
 #define ILI9341_NOP                        0x00
@@ -340,8 +340,8 @@ ili9341_read_memory_raw(uint8_t cmd, int len, uint16_t* out)
 		// read data is always 18bit
 		r = ssp_sendrecvdata(0);
 		g = ssp_sendrecvdata(0);
-		b = ssp_sendrecvdata(0);
-		*out++ = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
+//		b = ssp_sendrecvdata(0);
+		*out++ = (g << 8) | r;
 	}
 
 	CS_HIGH;
@@ -376,50 +376,49 @@ ili9341_set_flip(bool flipX, bool flipY) {
 }
 
 
-
 void
-ili9341_drawchar_5x7(uint8_t ch, int x, int y, uint16_t fg, uint16_t bg)
+ili9341_drawchar_7x11(uint8_t ch, int x, int y, uint16_t fg, uint16_t bg)
 {
   uint16_t *buf = ili9341_spi_buffer;
   uint8_t bits;
   int c, r;
-  for(c = 0; c < 7; c++) {
-	bits = x5x7_bits[(ch * 7) + c];
-	for (r = 0; r < 5; r++) {
+  for(c = 0; c < 11; c++) {
+	bits = x7x11b_bits[(ch * 11) + c];
+	for (r = 0; r < 7; r++) {
 	  *buf++ = (0x80 & bits) ? fg : bg;
 	  bits <<= 1;
 	}
   }
-  ili9341_bulk(x, y, 5, 7);
+  ili9341_bulk(x, y, 7, 11);
 }
 
 void
-ili9341_drawstring_5x7_inv(const char *str, int x, int y, uint16_t fg, uint16_t bg, bool invert)
+ili9341_drawstring_7x11_inv(const char *str, int x, int y, uint16_t fg, uint16_t bg, bool invert)
 {
   if (invert)
-    ili9341_drawstring_5x7(str, x, y, bg, fg);
+    ili9341_drawstring_7x11(str, x, y, bg, fg);
   else
-    ili9341_drawstring_5x7(str, x, y, fg, bg);
+    ili9341_drawstring_7x11(str, x, y, fg, bg);
 }
 
 void
-ili9341_drawstring_5x7(const char *str, int x, int y, uint16_t fg, uint16_t bg)
+ili9341_drawstring_7x11(const char *str, int x, int y, uint16_t fg, uint16_t bg)
 {
   while (*str) {
-	ili9341_drawchar_5x7(*str, x, y, fg, bg);
-	x += 5;
+	ili9341_drawchar_7x11(*str, x, y, fg, bg);
+	x += 7;
 	str++;
   }
 }
 
 
 void
-ili9341_drawstring_5x7(const char *str, int len, int x, int y, uint16_t fg, uint16_t bg)
+ili9341_drawstring_7x11(const char *str, int len, int x, int y, uint16_t fg, uint16_t bg)
 {
   const char* end = str + len;
   while (str < end) {
-	ili9341_drawchar_5x7(*str, x, y, fg, bg);
-	x += 5;
+	ili9341_drawchar_7x11(*str, x, y, fg, bg);
+	x += 7;
 	str++;
   }
 }
@@ -430,16 +429,16 @@ ili9341_drawchar_size(uint8_t ch, int x, int y, uint16_t fg, uint16_t bg, uint8_
   uint16_t *buf = ili9341_spi_buffer;
   uint8_t bits;
   int c, r;
-  for(c = 0; c < 7*size; c++) {
-	bits = x5x7_bits[(ch * 7) + (c / size)];
-	for (r = 0; r < 5*size; r++) {
+  for(c = 0; c < 11*size; c++) {
+	bits = x7x11b_bits[(ch * 11) + (c / size)];
+	for (r = 0; r < 7*size; r++) {
 	  *buf++ = (0x80 & bits) ? fg : bg;
 	  if (r % size == (size-1)) {
 		  bits <<= 1;
 	  }
 	}
   }
-  ili9341_bulk(x, y, 5*size, 7*size);
+  ili9341_bulk(x, y, 7*size, 11*size);
 }
 
 void
@@ -449,10 +448,10 @@ ili9341_drawstring_size(const char *str, int x, int y, uint16_t fg, uint16_t bg,
   while (*str) {
 	if((*str) == '\n') {
         x = origX;
-        y += 7 * size;
+        y += 11 * size;
     } else {
         ili9341_drawchar_size(*str, x, y, fg, bg, size);
-        x += 5 * size;
+        x += 7 * size;
     }
     str++;
   }

@@ -23,7 +23,7 @@
 #include "flash.hpp"
 #include "globals.hpp"
 #include "ili9341.hpp"
-#include "Font5x7.h"
+#include "Font7x11b.h"
 #include "plot.hpp"
 #include "ui.hpp"
 #include "board.hpp"
@@ -133,10 +133,10 @@ touch_cal_exec(void)
   
   uiDisableProcessing();
 
-  ili9341_fill(0, 0, 320, 240, 0);
+  ili9341_fill(0, 0, 480, 320, 0);
   ili9341_line(0, 0, 0, 32, 0xffff);
   ili9341_line(0, 0, 32, 0, 0xffff);
-  ili9341_drawstring_5x7("TOUCH UPPER LEFT", 10, 10, 0xffff, 0x0000);
+  ili9341_drawstring_7x11("TOUCH UPPER LEFT", 10, 10, 0xffff, 0x0000);
 
   do {
     evt = uiWaitEvent();
@@ -145,10 +145,10 @@ touch_cal_exec(void)
   } while(!evt.isTouchRelease());
 
 
-  ili9341_fill(0, 0, 320, 240, 0);
-  ili9341_line(320-1, 240-1, 320-1, 240-32, 0xffff);
-  ili9341_line(320-1, 240-1, 320-32, 240-1, 0xffff);
-  ili9341_drawstring_5x7("TOUCH LOWER RIGHT", 230, 220, 0xffff, 0x0000);
+  ili9341_fill(0, 0, 480, 320, 0);
+  ili9341_line(480-1, 320-1, 480-1, 320-32, 0xffff);
+  ili9341_line(480-1, 320-1, 480-32, 320-1, 0xffff);
+  ili9341_drawstring_7x11("TOUCH LOWER RIGHT", 351, 299, 0xffff, 0x0000);
 
   do {
     evt = uiWaitEvent();
@@ -158,8 +158,8 @@ touch_cal_exec(void)
 
   config.touch_cal[0] = x1;
   config.touch_cal[1] = y1;
-  config.touch_cal[2] = (x2 - x1) * 16 / 320;
-  config.touch_cal[3] = (y2 - y1) * 16 / 240;
+  config.touch_cal[2] = (x2 - x1) * 16 / 480;
+  config.touch_cal[3] = (y2 - y1) * 16 / 320;
 
   UIActions::printTouchCal();
 
@@ -175,8 +175,8 @@ touch_draw_test(void)
   
   uiDisableProcessing();
 
-  ili9341_fill(0, 0, 320, 240, 0);
-  ili9341_drawstring_5x7("TOUCH TEST: DRAG PANEL", OFFSETX, 233, 0xffff, 0x0000);
+  ili9341_fill(0, 0, 480, 320, 0);
+  ili9341_drawstring_7x11("TOUCH TEST: DRAG PANEL", OFFSETX, 309, 0xffff, 0x0000);
 
   do {
     evt = uiWaitEvent();
@@ -204,8 +204,8 @@ bool touch_position(int *x, int *y)
   *x = (int(touchX) - config.touch_cal[0]) * 16 / config.touch_cal[2];
   *y = (int(touchY) - config.touch_cal[1]) * 16 / config.touch_cal[3];
   if(config.ui_options & UI_OPTIONS_FLIP) {
-    *x = 320 - *x;
-    *y = 240 - *y;
+    *x = 480 - *x;
+    *y = 320 - *y;
   }
   return true;
 }
@@ -221,25 +221,25 @@ show_version(void)
   int x = 5, y = 5;
   
   uiDisableProcessing();
-  ili9341_fill(0, 0, 320, 240, 0);
+  ili9341_fill(0, 0, 480, 320, 0);
 
   ili9341_drawstring_size(BOARD_NAME, x, y, 0xffff, 0x0000, 4);
-  y += 25;
+  y += 40;
 
-  ili9341_drawstring_5x7("Software copyright @edy555 et al", x, y += 10, 0xffff, 0x0000);
-  ili9341_drawstring_5x7("Hardware designed by OwOComm", x, y += 10, 0xffff, 0x0000);
-  ili9341_drawstring_5x7("Licensed under GPL. ", x, y += 10, 0xffff, 0x0000);
-  ili9341_drawstring_5x7("https://github.com/ttrftech/NanoVNA", x + 10, y += 10, 0xffff, 0x0000);
-  ili9341_drawstring_5x7("https://github.com/nanovna/NanoVNA-V2-firmware", x + 10, y += 10, 0xffff, 0x0000);
-  ili9341_drawstring_5x7("Version: " GITVERSION, x, y += 10, 0xffff, 0x0000);
-  ili9341_drawstring_5x7("Build Time: " __DATE__ " - " __TIME__, x, y += 10, 0xffff, 0x0000);
+  ili9341_drawstring_7x11("Software copyright @edy555 et al", x, y += 13, 0xffff, 0x0000);
+  ili9341_drawstring_7x11("Hardware designed by OwOComm", x, y += 13, 0xffff, 0x0000);
+  ili9341_drawstring_7x11("Licensed under GPL. ", x, y += 13, 0xffff, 0x0000);
+  ili9341_drawstring_7x11("https://github.com/ttrftech/NanoVNA", x + 14, y += 13, 0xffff, 0x0000);
+  ili9341_drawstring_7x11("https://github.com/nanovna/NanoVNA-V2-firmware", x + 14, y += 13, 0xffff, 0x0000);
+  ili9341_drawstring_7x11("Version: " GITVERSION, x, y += 13, 0xffff, 0x0000);
+  ili9341_drawstring_7x11("Build Time: " __DATE__ " - " __TIME__, x, y += 13, 0xffff, 0x0000);
   y += 5;
-  ili9341_drawstring_5x7("Kernel: " CH_KERNEL_VERSION, x, y += 10, 0xffff, 0x0000);
-  ili9341_drawstring_5x7("Compiler: " PORT_COMPILER_NAME, x, y += 10, 0xffff, 0x0000);
-  ili9341_drawstring_5x7("Architecture: " PORT_ARCHITECTURE_NAME " Core Variant: " PORT_CORE_VARIANT_NAME, x, y += 10, 0xffff, 0x0000);
-  ili9341_drawstring_5x7("Port Info: " PORT_INFO, x, y += 10, 0xffff, 0x0000);
-  ili9341_drawstring_5x7("Platform: " PLATFORM_NAME, x, y += 10, 0xffff, 0x0000);
-  ili9341_drawstring_5x7("Board: " BOARD_NAME, x, y += 10, 0xffff, 0x0000);
+  ili9341_drawstring_7x11("Kernel: " CH_KERNEL_VERSION, x, y += 13, 0xffff, 0x0000);
+  ili9341_drawstring_7x11("Compiler: " PORT_COMPILER_NAME, x, y += 13, 0xffff, 0x0000);
+  ili9341_drawstring_7x11("Architecture: " PORT_ARCHITECTURE_NAME " Core Variant: " PORT_CORE_VARIANT_NAME, x, y += 13, 0xffff, 0x0000);
+  ili9341_drawstring_7x11("Port Info: " PORT_INFO, x, y += 13, 0xffff, 0x0000);
+  ili9341_drawstring_7x11("Platform: " PLATFORM_NAME, x, y += 13, 0xffff, 0x0000);
+  ili9341_drawstring_7x11("Board: " BOARD_NAME, x, y += 13, 0xffff, 0x0000);
 
   while (true) {
     UIEvent evt = uiWaitEvent();
@@ -254,10 +254,10 @@ show_version(void)
 void
 show_dmesg(void)
 {
-  int x = 5, y = 5;
+  int x = 7, y = 7;
   
   uiDisableProcessing();
-  ili9341_fill(0, 0, 320, 240, 0);
+  ili9341_fill(0, 0, 480, 320, 0);
 
   int maxLines = 23;
   
@@ -286,7 +286,7 @@ show_dmesg(void)
   for(int i = nextLineIndex+1; i<maxLines; i++) {
     int len = (i < (maxLines-1)) ? (lines[i+1] - lines[i]) : (end - lines[i]);
     if(len > 0) len--;
-    ili9341_drawstring_5x7(lines[i], len, x, y, 0xffff, 0x0000);
+    ili9341_drawstring_7x11(lines[i], len, x, y, 0xffff, 0x0000);
     y += 10;
   }
 
@@ -301,9 +301,9 @@ show_dmesg(void)
 
 
 void ui_mode_usb(void) {
-  int x = 5, y = 5;
+  int x = 7, y = 7;
 
-  ili9341_fill(0, 0, 320, 240, 0);
+  ili9341_fill(0, 0, 480, 320, 0);
 
   ili9341_drawstring_size(BOARD_NAME, x, y, 0xffff, 0x0000, 4);
   y += 50;
@@ -316,9 +316,9 @@ void ui_mode_usb(void) {
 void
 show_message(const char* title, const char* message, int fg, int bg)
 {
-  int x = 5, y = 5;
+  int x = 7, y = 7;
 
-  ili9341_fill(0, 0, 320, 240, bg);
+  ili9341_fill(0, 0, 480, 320, bg);
 
   ili9341_drawstring_size(title, x, y, fg, bg, 4);
   y += 50;
@@ -331,12 +331,12 @@ ui_enter_dfu(void)
 {
   uiDisableProcessing();
 
-  int x = 5, y = 5;
+  int x = 7, y = 7;
 
   // leave a last message 
-  ili9341_fill(0, 0, 320, 240, 0);
-  ili9341_drawstring_5x7("DFU: Device Firmware Update Mode", x, y += 10, 0xffff, 0x0000);
-  ili9341_drawstring_5x7("To exit DFU mode, please reset device yourself.", x, y += 10, 0xffff, 0x0000);
+  ili9341_fill(0, 0, 480, 320, 0);
+  ili9341_drawstring_7x11("DFU: Device Firmware Update Mode", x, y += 13, 0xffff, 0x0000);
+  ili9341_drawstring_7x11("To exit DFU mode, please reset device yourself.", x, y += 13, 0xffff, 0x0000);
 
   enterDFU();
 }
@@ -670,7 +670,7 @@ menu_display_cb(UIEvent evt, int item)
       else ili9341_set_flip(false, false);
       redraw_request |= 0xff;
       force_set_markmap();
-      ili9341_fill(0, 0, 320, 240, 0);
+      ili9341_fill(0, 0, 480, 320, 0);
       draw_all(true);
       draw_menu();
       plot_cancel();
@@ -1194,8 +1194,10 @@ void menu_invoke(UIEvent evt, int item)
   }
 }
 
-#define KP_X(x) (48*(x) + 2 + (320-64-192))
-#define KP_Y(y) (48*(y) + 2)
+
+//KP_WIDTH = 64;
+#define KP_X(x) (64*(x) + (480-128-64*4))
+#define KP_Y(y) (64*(y) + 20)
 
 #define KP_PERIOD 10
 #define KP_MINUS 11
@@ -1301,8 +1303,8 @@ draw_keypad(void)
     uint16_t bg = config.menu_normal_color;
     if (i == selection)
       bg = config.menu_active_color;
-    ili9341_fill(keypads[i].x, keypads[i].y, 44, 44, bg);
-    ili9341_drawfont(keypads[i].c, &NF20x22, keypads[i].x+12, keypads[i].y+10, 0x0000, bg);
+    ili9341_fill(keypads[i].x, keypads[i].y, 60, 60, bg);
+    ili9341_drawfont(keypads[i].c, &NF20x22, keypads[i].x+20, keypads[i].y+19, 0x0000, bg);
     i++;
   }
 }
@@ -1310,9 +1312,9 @@ draw_keypad(void)
 void
 draw_numeric_area_frame(void)
 {
-  ili9341_fill(0, 208, 320, 32, 0xffff);
-  ili9341_drawstring_5x7(keypad_mode_label[keypad_mode], 10, 220, 0x0000, 0xffff);
-  ili9341_drawfont(KP_KEYPAD, &NF20x22, 300, 216, 0x0000, 0xffff);
+  ili9341_fill(0, 290, 480, 30, 0xffff);
+  ili9341_drawstring_7x11(keypad_mode_label[keypad_mode], 10, 300, 0x0000, 0xffff);
+ // ili9341_drawfont(KP_KEYPAD, &NF20x22, 300, 216, 0x0000, 0xffff);
 }
 
 void
@@ -1343,11 +1345,11 @@ draw_numeric_input(const char *buf)
     }
 
     if (c >= 0)
-      ili9341_drawfont(c, &NF20x22, x, 208+4, fg, bg);
+      ili9341_drawfont(c, &NF20x22, x, 290+4, fg, bg);
     else if (focused)
-      ili9341_drawfont(0, &NF20x22, x, 208+4, fg, bg);
+      ili9341_drawfont(0, &NF20x22, x, 290+4, fg, bg);
     else
-      ili9341_fill(x, 208+4, 20, 24, bg);
+      ili9341_fill(x, 290+4, 20, 24, bg);
       
     x += 20;
     if (xsim[i] > 0) {
@@ -1356,7 +1358,7 @@ draw_numeric_input(const char *buf)
     }
   }
   if (i <= NUMERIC_INPUT_DIGITS) {
-      ili9341_fill(x, 208+4, 20*(NUMERIC_INPUT_DIGITS+1-i), 24, 0xffff);
+      ili9341_fill(x, 290+4, 20*(NUMERIC_INPUT_DIGITS+1-i), 24, 0xffff);
   }
 }
 
@@ -1453,20 +1455,20 @@ draw_menu_buttons(const menuitem_t *menu)
       break;
     if (menu[i].type == MT_BLANK) 
       continue;
-    int y = 32*i;
+    int y = 42*i;
     uint16_t bg = config.menu_normal_color;
     uint16_t fg = 0x0000;
     // focus only in MENU mode but not in KEYPAD mode
     if (ui_mode == UI_MENU && i == selection)
       bg = config.menu_active_color;
-    ili9341_fill(320-60, y, 60, 30, bg);
+    ili9341_fill(480-90, y, 90, 40, bg);
     
     menu_item_modify_attribute(menu, i, &fg, &bg);
     if (menu_is_multiline(menu[i].label, &l1, &l2)) {
-      ili9341_drawstring_5x7(l1, 320-54, y+8, fg, bg);
-      ili9341_drawstring_5x7(l2, 320-54, y+15, fg, bg);
+    	ili9341_drawstring_7x11(l1, 480-80, y+7, fg, bg);
+    	ili9341_drawstring_7x11(l2, 480-80, y+20, fg, bg);
     } else {
-      ili9341_drawstring_5x7(menu[i].label, 320-54, y+12, fg, bg);
+    	ili9341_drawstring_7x11(menu[i].label, 480-80, y+14, fg, bg);
     }
   }
 }
@@ -1497,9 +1499,9 @@ menu_apply_touch(UIEvent evt)
       break;
     if (menu[i].type == MT_BLANK) 
       continue;
-    int y = 32*i;
-    if (y-2 < touch_y && touch_y < y+30+2
-        && 320-60 < touch_x) {
+    int y = 42*i; //MENU_BUTTON_HEIGHT = 38;
+    if (y-2 < touch_y && touch_y < y+40+2
+        && 480-90 < touch_x) {
       menu_select_touch(evt, i);
       return;
     }
@@ -1518,14 +1520,14 @@ void
 erase_menu_buttons(void)
 {
   uint16_t bg = 0;
-  ili9341_fill(320-60, 0, 60, 32*7, bg);
+  ili9341_fill(480-90, 0, 90, 42*7, bg);
 }
 
 void
 erase_numeric_input(void)
 {
   uint16_t bg = 0;
-  ili9341_fill(0, 240-32, 320, 32, bg);
+  ili9341_fill(0, 320-32, 480, 32, bg);
 }
 
 void
@@ -1648,7 +1650,7 @@ ui_mode_menu(void)
 
   ui_mode = UI_MENU;
   /* narrowen plotting area */
-  area_width = AREA_WIDTH_NORMAL - (64-8);
+  area_width = AREA_WIDTH_NORMAL - 90;
   area_height = HEIGHT;
   ensure_selection();
   draw_menu();
@@ -1666,7 +1668,7 @@ ui_mode_numeric(int _keypad_mode)
   keypad_mode = _keypad_mode;
   ui_mode = UI_NUMERIC;
   area_width = AREA_WIDTH_NORMAL;
-  area_height = 240-32;//HEIGHT - 32;
+  area_height = 320-32;//HEIGHT - 32;
 
   draw_numeric_area_frame();
   fetch_numeric_target();
@@ -1691,7 +1693,7 @@ ui_mode_keypad(int _keypad_mode)
   keypads_last_index = i;
 
   ui_mode = UI_KEYPAD;
-  area_width = AREA_WIDTH_NORMAL - (64-8);
+  area_width = AREA_WIDTH_NORMAL - 80;
   area_height = HEIGHT - 32;
   draw_menu();
   draw_keypad();
@@ -1951,8 +1953,8 @@ keypad_apply_touch(UIEvent evt)
     return -1;
 
   while (keypads[i].x) {
-    if (keypads[i].x-2 < touch_x && touch_x < keypads[i].x+44+2
-        && keypads[i].y-2 < touch_y && touch_y < keypads[i].y+44+2) {
+    if (keypads[i].x-2 < touch_x && touch_x < keypads[i].x+64
+        && keypads[i].y-2 < touch_y && touch_y < keypads[i].y+64) {
       // draw focus
       selection = i;
       draw_keypad();
@@ -1966,7 +1968,7 @@ keypad_apply_touch(UIEvent evt)
     }
     i++;
   }
-  if (touch_y > 48 * 4) {
+  if (touch_y > 64 * 4) {
     // exit keypad mode
     return -2;
   }
@@ -1990,7 +1992,7 @@ numeric_apply_touch(UIEvent evt)
     return;
   }
 
-  if (touch_y > 240-40) {
+  if (touch_y > 320-40) {
     int n = 9 - (touch_x - 64) / 20;
     uistat.digit = n;
     uistat.digit_mode = TRUE;

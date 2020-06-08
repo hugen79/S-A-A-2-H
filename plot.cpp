@@ -4,7 +4,7 @@
 #include "globals.hpp"
 #include "plot.hpp"
 #include "ili9341.hpp"
-#include "Font5x7.h"
+#include "Font7x11b.h"
 #include <board.hpp>
 #include <mculib/printf.hpp>
 
@@ -123,10 +123,9 @@ circle_inout(int x, int y, int r)
 }
 
 
-#define P_CENTER_X 146
-#define P_CENTER_Y 116
-#define P_RADIUS 116
-
+#define P_CENTER_X (CELLOFFSETX + WIDTH/2)
+#define P_CENTER_Y (HEIGHT/2)
+#define P_RADIUS (HEIGHT/2)
 static int
 polar_grid(int x, int y)
 {
@@ -174,59 +173,59 @@ polar_grid(int x, int y)
 int
 smith_grid(int x, int y)
 {
-	int c = config.grid_color;
-	int d;
+	 int c = config.grid_color;
+	  int d;
 
-	// offset to center
-	x -= P_CENTER_X;
-	y -= P_CENTER_Y;
-	
-	// outer circle
-	d = circle_inout(x, y, P_RADIUS);
-	if (d < 0)
-		return 0;
-	if (d == 0)
-		return c;
-	
-	// horizontal axis
-	if (y == 0)
-		return c;
+	  // offset to center
+	  x -= P_CENTER_X;
+	  y -= P_CENTER_Y;
 
-	// shift circle center to right origin
-	x -= P_RADIUS;
+	  // outer circle
+	  d = circle_inout(x, y, P_RADIUS);
+	  if (d < 0)
+	    return 0;
+	  if (d == 0)
+	    return c;
 
-	// Constant Reactance Circle: 2j : R/2 = 58
-	if (circle_inout(x, y+58, 58) == 0)
-		return c;
-	if (circle_inout(x, y-58, 58) == 0)
-		return c;
+	  // horizontal axis
+	  if (y == 0)
+	    return c;
 
-	// Constant Resistance Circle: 3 : R/4 = 29
-	d = circle_inout(x+29, y, 29);
-	if (d > 0) return 0;
-	if (d == 0) return c;
+	  // shift circle center to right origin
+	  x -= P_RADIUS;
 
-	// Constant Reactance Circle: 1j : R = 116
-	if (circle_inout(x, y+116, 116) == 0)
-		return c;
-	if (circle_inout(x, y-116, 116) == 0)
-		return c;
+	  // Constant Reactance Circle: 2j : R/2 = (P_RADIUS/2)
+	  if (circle_inout(x, y+(P_RADIUS/2), (P_RADIUS/2)) == 0)
+	    return c;
+	  if (circle_inout(x, y-(P_RADIUS/2), (P_RADIUS/2)) == 0)
+	    return c;
 
-	// Constant Resistance Circle: 1 : R/2 = 58
-	d = circle_inout(x+58, y, 58);
-	if (d > 0) return 0;
-	if (d == 0) return c;
+	  // Constant Resistance Circle: 3 : R/4 = (P_RADIUS/4)
+	  d = circle_inout(x+(P_RADIUS/4), y, (P_RADIUS/4));
+	  if (d > 0) return 0;
+	  if (d == 0) return c;
 
-	// Constant Reactance Circle: 1/2j : R*2 = 232
-	if (circle_inout(x, y+232, 232) == 0)
-		return c;
-	if (circle_inout(x, y-232, 232) == 0)
-		return c;
+	  // Constant Reactance Circle: 1j : R = P_RADIUS
+	  if (circle_inout(x, y+P_RADIUS, P_RADIUS) == 0)
+	    return c;
+	  if (circle_inout(x, y-P_RADIUS, P_RADIUS) == 0)
+	    return c;
 
-	// Constant Resistance Circle: 1/3 : R*3/4 = 87
-	if (circle_inout(x+87, y, 87) == 0)
-		return c;
-	return 0;
+	  // Constant Resistance Circle: 1 : R/2 = (P_RADIUS/2)
+	  d = circle_inout(x+(P_RADIUS/2), y, (P_RADIUS/2));
+	  if (d > 0) return 0;
+	  if (d == 0) return c;
+
+	  // Constant Reactance Circle: 1/2j : R*2 = (P_RADIUS*2)
+	  if (circle_inout(x, y+(P_RADIUS*2), (P_RADIUS*2)) == 0)
+	    return c;
+	  if (circle_inout(x, y-(P_RADIUS*2), (P_RADIUS*2)) == 0)
+	    return c;
+
+	  // Constant Resistance Circle: 1/3 : R*3/4 = (P_RADIUS*3/4)
+	  if (circle_inout(x+(P_RADIUS*3/4), y, (P_RADIUS*3/4)) == 0)
+	    return c;
+	  return 0;
 }
 
 int
@@ -819,7 +818,7 @@ static float distance_of_index(int idx) {
 void
 mark_map(int x, int y)
 {
-	if (y >= 0 && y < 8 && x >= 0 && x < 16)
+	if (y >= 0 && y < 10 && x >= 0 && x < 16)
 		markmap[current_mappage][y] |= 1<<x;
 }
 
@@ -934,7 +933,7 @@ mark_cells_from_index(void)
 					}
 				}
 				mark_map(m0, n0);
-				if(m0 < 0 || m0 >= 16 || n0 < 0 || n0 >= 8)
+				if(m0 < 0 || m0 >= 20 || n0 < 0 || n0 >= 8)
 					break;
 			}
 			x0 = x1;
@@ -1156,22 +1155,22 @@ cell_draw_refpos(int m, int n, int w, int h)
 void
 draw_marker(int w, int h, int x, int y, int c, int ch)
 {
-	int i, j;
-	for (j = 10; j >= 0; j--) {
-		int j0 = j / 2;
-		for (i = -j0; i <= j0; i++) {
-			int x0 = x + i;
-			int y0 = y - j;
-			int cc = c;
-			if (j <= 9 && j > 2 && i >= -1 && i <= 3) {
-				uint16_t bits = x5x7_bits[(ch * 7) + (9-j)];
-				if (bits & (0x80>>(i+1)))
-					cc = 0;
-			}
-			if (y0 >= 0 && y0 < h && x0 >= 0 && x0 < w)
-				ili9341_spi_buffer[y0*w+x0] = cc;
-		}
-	}
+	 int i, j;
+	  for (j = 14; j >= 0; j--) {
+	    int j0 = j / 2;
+	    for (i = -j0; i <= j0; i++) {
+	      int x0 = x + i;
+	      int y0 = y - j;
+	      int cc = c;
+	      if (j <= 13 && j > 2 && i >= -1 && i <= 3) {
+	        uint16_t bits = x7x11b_bits[(ch * 11) + (14-j)];
+		if (bits & (0x80>>(i+2)))
+		  cc = 0;
+	      }
+	      if (y0 >= 0 && y0 < h && x0 >= 0 && x0 < w)
+	        ili9341_spi_buffer[y0*w+x0] = cc;
+	    }
+	  }
 }
 
 void
@@ -1555,8 +1554,8 @@ void
 request_to_draw_cells_behind_menu(void)
 {
 	int n, m;
-	for (m = 7; m <= 9; m++)
-		for (n = 0; n < 8; n++)
+	for (m = 11; m <= 14; m++)
+		for (n = 0; n < 10; n++)
 			mark_map(m, n);
 	redraw_request |= REDRAW_CELLS;
 }
@@ -1565,27 +1564,27 @@ void
 request_to_draw_cells_behind_numeric_input(void)
 {
 	int n, m;
-	for (m = 0; m <= 9; m++)
-		for (n = 6; n < 8; n++)
+	for (m = 0; m <= 14; m++)
+		for (n = 8; n < 10; n++)
 			mark_map(m, n);
 	redraw_request |= REDRAW_CELLS;
 }
 
 
 void
-cell_drawchar_5x7(int w, int h, uint8_t ch, int x, int y, uint16_t fg, int invert)
+cell_drawchar_7x11(int w, int h, uint8_t ch, int x, int y, uint16_t fg, int invert)
 {
 	uint8_t bits;
 	int c, r;
-	if (y <= -7 || y >= h || x <= -5 || x >= w)
+	if (y <= -11 || y >= h || x <= -7 || x >= w)
 		return;
-	for(c = 0; c < 7; c++) {
+	for(c = 0; c < 11; c++) {
 		if ((y + c) < 0 || (y + c) >= h)
 			continue;
-		bits = x5x7_bits[(ch * 7) + c];
+		bits = x7x11b_bits[(ch *11) + c];
 		if (invert)
 			bits = ~bits;
-		for (r = 0; r < 5; r++) {
+		for (r = 0; r < 7; r++) {
 			if ((x+r) >= 0 && (x+r) < w && (0x80 & bits)) 
 				ili9341_spi_buffer[(y+c)*w + (x+r)] = fg;
 			bits <<= 1;
@@ -1594,21 +1593,21 @@ cell_drawchar_5x7(int w, int h, uint8_t ch, int x, int y, uint16_t fg, int inver
 }
 
 void
-cell_drawstring_5x7(int w, int h, char *str, int x, int y, uint16_t fg)
+cell_drawstring_7x11(int w, int h, char *str, int x, int y, uint16_t fg)
 {
 	while (*str) {
-		cell_drawchar_5x7(w, h, *str, x, y, fg, FALSE);
-		x += 5;
+		cell_drawchar_7x11(w, h, *str, x, y, fg, FALSE);
+		x += 7;
 		str++;
 	}
 }
 
 void
-cell_drawstring_invert_5x7(int w, int h, char *str, int x, int y, uint16_t fg, int invert)
+cell_drawstring_invert_7x11(int w, int h, char *str, int x, int y, uint16_t fg, int invert)
 {
 	while (*str) {
-		cell_drawchar_5x7(w, h, *str, x, y, fg, invert);
-		x += 5;
+		cell_drawchar_7x11(w, h, *str, x, y, fg, invert);
+		x += 7;
 		str++;
 	}
 }
@@ -1630,14 +1629,14 @@ cell_draw_marker_info(int m, int n, int w, int h)
 		for (mk = 0; mk < MARKERS_MAX; mk++) {
 			if (!markers[mk].enabled)
 				continue;
-			int xpos = 1 + (j%2)*146;
-			int ypos = 1 + (j/2)*7;
+			int xpos = 1 + (j%2)*228;
+			int ypos = 1 + (j/2)*13;
 			xpos -= m * CELLWIDTH -CELLOFFSETX;
 			ypos -= n * CELLHEIGHT;
 			strcpy(buf, "MK1");
 			buf[2] += mk;
-			cell_drawstring_invert_5x7(w, h, buf, xpos, ypos, config.trace_color[t], mk == active_marker);
-			xpos += 20;
+			cell_drawstring_invert_7x11(w, h, buf, xpos, ypos, config.trace_color[t], mk == active_marker);
+			xpos += 28;
 			//trace_get_info(t, buf, sizeof buf);
 			int32_t freq = freqAt(markers[mk].index);
 			if (uistat.marker_delta && mk != active_marker) {
@@ -1646,27 +1645,27 @@ cell_draw_marker_info(int m, int n, int w, int h)
 			} else {
 				frequency_string_short(buf, sizeof buf, freq, 0);
 			}
-			cell_drawstring_5x7(w, h, buf, xpos, ypos, config.trace_color[t]);
-			xpos += 64;
+			cell_drawstring_7x11(w, h, buf, xpos, ypos, config.trace_color[t]);
+			xpos += 116;
 			if (uistat.marker_delta && mk != active_marker)
 				trace_get_value_string_delta(t, buf, sizeof buf, measured[trace[t].channel], markers[mk].index, markers[active_marker].index);
 			else
 				trace_get_value_string(t, buf, sizeof buf, measured[trace[t].channel], markers[mk].index);
-			cell_drawstring_5x7(w, h, buf, xpos, ypos, 0xffff);
+			cell_drawstring_7x11(w, h, buf, xpos, ypos, 0xffff);
 			j++;
 		}
 
 		// draw marker delta
 		if (!uistat.marker_delta && previous_marker >= 0 && active_marker != previous_marker && markers[previous_marker].enabled) {
 			int idx0 = markers[previous_marker].index;
-			int xpos = 192;
-			int ypos = 1 + (j/2)*7;
+			int xpos = 272;
+			int ypos = 1 + (j/2)*11;
 			xpos -= m * CELLWIDTH -CELLOFFSETX;
 			ypos -= n * CELLHEIGHT;
 			strcpy(buf, S_DELTA "1:");
 			buf[1] += previous_marker;
-			cell_drawstring_5x7(w, h, buf, xpos, ypos, 0xffff);
-			xpos += 19;
+			cell_drawstring_7x11(w, h, buf, xpos, ypos, 0xffff);
+			xpos += 26;
 			if ((domain_mode & DOMAIN_MODE) == DOMAIN_FREQ) {
 				frequency_string(buf, sizeof buf, freqAt(idx) - freqAt(idx0));
 			} else {
@@ -1676,39 +1675,39 @@ cell_draw_marker_info(int m, int n, int w, int h)
 				buf[n++] = ' ';
 				string_value_with_prefix(&buf[n], sizeof buf - n, distance_of_index(idx) - distance_of_index(idx0), 'm');
 			}
-			cell_drawstring_5x7(w, h, buf, xpos, ypos, 0xffff);
+			cell_drawstring_7x11(w, h, buf, xpos, ypos, 0xffff);
 		}
 	} else {
 		for (t = 0; t < TRACES_MAX; t++) {
 			if (!trace[t].enabled)
 				continue;
-			int xpos = 1 + (j%2)*146;
-			int ypos = 1 + (j/2)*7;
+			int xpos = 1 + (j%2)*228;
+			int ypos = 1 + (j/2)*11;
 			xpos -= m * CELLWIDTH -CELLOFFSETX;
 			ypos -= n * CELLHEIGHT;
 			strcpy(buf, "CH0");
 			buf[2] += trace[t].channel;
 			//chsnprintf(buf, sizeof buf, "CH%d", trace[t].channel);
-			cell_drawstring_invert_5x7(w, h, buf, xpos, ypos, config.trace_color[t], t == uistat.current_trace);
-			xpos += 20;
+			cell_drawstring_invert_7x11(w, h, buf, xpos, ypos, config.trace_color[t], t == uistat.current_trace);
+			xpos += 28;
 			trace_get_info(t, buf, sizeof buf);
-			cell_drawstring_5x7(w, h, buf, xpos, ypos, config.trace_color[t]);
-			xpos += 64;
+			cell_drawstring_7x11(w, h, buf, xpos, ypos, config.trace_color[t]);
+			xpos += 90;
 			trace_get_value_string(t, buf, sizeof buf, measured[trace[t].channel], idx);
-			cell_drawstring_5x7(w, h, buf, xpos, ypos, 0xffff);
+			cell_drawstring_7x11(w, h, buf, xpos, ypos, 0xffff);
 			j++;
 		}
 
 		// draw marker frequency
-		int xpos = 192;
-		int ypos = 1 + (j/2)*7;
+		int xpos = 272;
+		int ypos = 1 + (j/2)*11;
 		xpos -= m * CELLWIDTH -CELLOFFSETX;
 		ypos -= n * CELLHEIGHT;
 		strcpy(buf, "1:");
 		buf[0] += active_marker;
-		xpos += 5;
-		cell_drawstring_invert_5x7(w, h, buf, xpos, ypos, 0xffff, uistat.lever_mode == LM_MARKER);
-		xpos += 14;
+		xpos += 7;
+		cell_drawstring_invert_7x11(w, h, buf, xpos, ypos, 0xffff, uistat.lever_mode == LM_MARKER);
+		xpos += 19;
 		if ((domain_mode & DOMAIN_MODE) == DOMAIN_FREQ) {
 			frequency_string(buf, sizeof buf, plot_getFrequencyAt(idx));
 		} else {
@@ -1717,23 +1716,23 @@ cell_draw_marker_info(int m, int n, int w, int h)
 			buf[n++] = ' ';
 			string_value_with_prefix(&buf[n], sizeof buf-n, distance_of_index(idx), 'm');
 		}
-		cell_drawstring_5x7(w, h, buf, xpos, ypos, 0xffff);
+		cell_drawstring_7x11(w, h, buf, xpos, ypos, 0xffff);
 	}
 	if (electrical_delay != 0) {
 		// draw electrical delay
-		int xpos = 21;
-		int ypos = 1 + ((j+1)/2)*7;
+		int xpos = 29;
+		int ypos = 1 + ((j+1)/2)*113;
 		xpos -= m * CELLWIDTH -CELLOFFSETX;
 		ypos -= n * CELLHEIGHT;
 		chsnprintf(buf, sizeof buf, "Edelay");
-		cell_drawstring_5x7(w, h, buf, xpos, ypos, 0xffff);
-		xpos += 7 * 5;
+		cell_drawstring_7x11(w, h, buf, xpos, ypos, 0xffff);
+		xpos += 7 * 7;
 		int n = string_value_with_prefix(buf, sizeof buf, electrical_delay * 1e-12, 's');
-		cell_drawstring_5x7(w, h, buf, xpos, ypos, 0xffff);
-		xpos += n * 5 + 5;
+		cell_drawstring_7x11(w, h, buf, xpos, ypos, 0xffff);
+		xpos += n * 7 + 5;
 		float light_speed_ps = 299792458e-12; //(m/ps)
 		string_value_with_prefix(buf, sizeof buf, electrical_delay * light_speed_ps * velocity_factor, 'm');
-		cell_drawstring_5x7(w, h, buf, xpos, ypos, 0xffff);
+		cell_drawstring_7x11(w, h, buf, xpos, ypos, 0xffff);
 	}
 }
 
@@ -1800,7 +1799,7 @@ draw_frequencies(void)
 
 	// draw sweep points
 	chsnprintf(buf, sizeof(buf), "%3d P", (int)sweep_points);
-	ili9341_drawstring_5x7(buf, WIDTH / 2, 233, 0xffff, 0x0000);
+	ili9341_drawstring_7x11(buf, WIDTH / 2, 308, 0xffff, 0x0000);
 
 	if ((domain_mode & DOMAIN_MODE) == DOMAIN_FREQ) {
 		if (frequency1 > 0) {
@@ -1810,50 +1809,50 @@ draw_frequencies(void)
 			strcpy(buf, "START ");
 			frequency_string(buf+6, 24-6, start);
 			padString(buf, sizeof(buf));
-			ili9341_drawstring_5x7(buf, OFFSETX, 233, 0xffff, 0x0000);
+			ili9341_drawstring_7x11(buf, OFFSETX, 308, 0xffff, 0x0000);
 
 			strcpy(buf, "STOP ");
 			frequency_string(buf+5, 24-5, stop);
 			padString(buf, sizeof(buf));
-			ili9341_drawstring_5x7(buf, 205, 233, 0xffff, 0x0000);
+			ili9341_drawstring_7x11(buf, 320, 308, 0xffff, 0x0000);
 		} else if (frequency1 < 0) {
 			auto fcenter = frequency0;
 			auto fspan = -frequency1;
 			int x = OFFSETX;
 			strcpy(buf, "CENTER");
-			ili9341_drawstring_5x7_inv(buf, x, 233, 0xffff, 0x0000, uistat.lever_mode == LM_CENTER);
+			ili9341_drawstring_7x11_inv(buf, x, 308, 0xffff, 0x0000, uistat.lever_mode == LM_CENTER);
 			x += 5 * 6;
 			strcpy(buf, " ");
 			frequency_string(buf+1, 24-1, fcenter);
 			padString(buf, sizeof(buf));
-			ili9341_drawstring_5x7(buf, x, 233, 0xffff, 0x0000);
-			x = 205;
+			ili9341_drawstring_7x11(buf, x, 308, 0xffff, 0x0000);
+			x = 320;
 			strcpy(buf, "SPAN");
-			ili9341_drawstring_5x7_inv(buf, x, 233, 0xffff, 0x0000, uistat.lever_mode == LM_SPAN);
+			ili9341_drawstring_7x11_inv(buf, x, 308, 0xffff, 0x0000, uistat.lever_mode == LM_SPAN);
 			x += 5 * 4;
 			strcpy(buf, " ");
 			frequency_string(buf+1, 24-1, fspan);
 			padString(buf, sizeof(buf));
-			ili9341_drawstring_5x7(buf, x, 233, 0xffff, 0x0000);
+			ili9341_drawstring_7x11(buf, x, 308, 0xffff, 0x0000);
 		} else {
 			int x = OFFSETX;
 			strcpy(buf, "CW");
-			ili9341_drawstring_5x7_inv(buf, x, 233, 0xffff, 0x0000, uistat.lever_mode == LM_CENTER);
+			ili9341_drawstring_7x11_inv(buf, x, 308, 0xffff, 0x0000, uistat.lever_mode == LM_CENTER);
 			x += 5 * 2;
 			strcpy(buf, " ");
 			frequency_string(buf+1, 24-1, frequency0);
 			padString(buf, sizeof(buf));
-			ili9341_drawstring_5x7(buf, x, 233, 0xffff, 0x0000);
+			ili9341_drawstring_7x11(buf, x, 308, 0xffff, 0x0000);
 		}
 	} else {
 		strcpy(buf, "START 0s");
 		padString(buf, sizeof(buf));
-		ili9341_drawstring_5x7(buf, OFFSETX, 233, 0xffff, 0x0000);
+		ili9341_drawstring_7x11(buf, OFFSETX, 308, 0xffff, 0x0000);
 
 		strcpy(buf, "STOP ");
 		chsnprintf(buf+5, 24-5, "%d ns", (uint16_t)(time_of_index(current_props._sweep_points) * 1e9));
 		padString(buf, sizeof(buf));
-		ili9341_drawstring_5x7(buf, 205, 233, 0xffff, 0x0000);
+		ili9341_drawstring_7x11(buf, 320, 308, 0xffff, 0x0000);
 	}
 }
 
@@ -1862,7 +1861,7 @@ draw_cal_status(void)
 {
 	int x = 0;
 	int y = 100;
-#define YSTEP 7
+#define YSTEP 13
 	ili9341_fill(0, y, 10, 6*YSTEP, 0x0000);
 	if (cal_status & CALSTAT_APPLY) {
 		char c[3] = "C0";
@@ -1871,28 +1870,28 @@ draw_cal_status(void)
 			c[0] = 'c';
 		else if (active_props == &current_props)
 			c[1] = '*';
-		ili9341_drawstring_5x7(c, x, y, 0xffff, 0x0000);
+		ili9341_drawstring_7x11(c, x, y, 0xffff, 0x0000);
 		y += YSTEP;
 	}
 
 	if (cal_status & CALSTAT_ED) {
-		ili9341_drawstring_5x7("D", x, y, 0xffff, 0x0000);
+		ili9341_drawstring_7x11("D", x, y, 0xffff, 0x0000);
 		y += YSTEP;
 	}
 	if (cal_status & CALSTAT_ER) {
-		ili9341_drawstring_5x7("R", x, y, 0xffff, 0x0000);
+		ili9341_drawstring_7x11("R", x, y, 0xffff, 0x0000);
 		y += YSTEP;
 	}
 	if (cal_status & CALSTAT_ES) {
-		ili9341_drawstring_5x7("S", x, y, 0xffff, 0x0000);
+		ili9341_drawstring_7x11("S", x, y, 0xffff, 0x0000);
 		y += YSTEP;
 	}
 	if (cal_status & CALSTAT_ET) {
-		ili9341_drawstring_5x7("T", x, y, 0xffff, 0x0000);
+		ili9341_drawstring_7x11("T", x, y, 0xffff, 0x0000);
 		y += YSTEP;
 	}
 	if (cal_status & CALSTAT_EX) {
-		ili9341_drawstring_5x7("X", x, y, 0xffff, 0x0000);
+		ili9341_drawstring_7x11("X", x, y, 0xffff, 0x0000);
 		y += YSTEP;
 	}
 }
@@ -1977,7 +1976,7 @@ request_to_redraw_grid(void)
 void
 redraw_frame(void)
 {
-	ili9341_fill(0, 0, 320, 240, 0);
+	ili9341_fill(0, 0, 480, 320, 0);
 	draw_frequencies();
 	draw_cal_status();
 }

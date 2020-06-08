@@ -4,8 +4,8 @@
 
 #define OFFSETX 15
 #define OFFSETY 0
-#define WIDTH 291
-#define HEIGHT 233
+#define WIDTH 455
+#define HEIGHT (GRIDY*8 +1)
 #define TRACES_MAX 4
 
 
@@ -19,7 +19,7 @@ extern int area_height;
 extern bool plot_checkerBoard; // draw a checkerboard pattern that indicates where the cells are
 extern bool plot_shadeCells; // shade all drawn cells from now on
 
-#define GRIDY 29
+#define GRIDY 38
 
 // this function is called to determine frequency in hz at a marker point
 extern small_function<freqHz_t(int index)> plot_getFrequencyAt;
